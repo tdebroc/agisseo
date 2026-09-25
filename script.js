@@ -142,6 +142,37 @@
     });
   }, { passive: true });
 
+  /* ---------- Contact form (Netlify Forms, AJAX) ---------- */
+  const cform = $("#contactForm");
+  if (cform) {
+    const statusEl = $("#cformStatus");
+    cform.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const btn = $("button[type=submit]", cform);
+      const body = new URLSearchParams(new FormData(cform)).toString();
+      statusEl.textContent = "Envoi…";
+      statusEl.className = "cform-status";
+      if (btn) btn.disabled = true;
+      fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body,
+      })
+        .then((r) => {
+          if (!r.ok) throw new Error(r.status);
+          cform.classList.add("sent");
+          statusEl.textContent = "Merci — votre message est bien parti. Nous revenons vers vous sous 48 h.";
+          statusEl.className = "cform-status ok";
+          cform.reset();
+        })
+        .catch(() => {
+          if (btn) btn.disabled = false;
+          statusEl.textContent = "Un souci est survenu. Écrivez-nous directement à preparons@agiseo.com.";
+          statusEl.className = "cform-status err";
+        });
+    });
+  }
+
   /* ---------- Smooth anchor with offset ---------- */
   $$("a[href^=\"#\"]").forEach(a => {
     a.addEventListener("click", (e) => {
